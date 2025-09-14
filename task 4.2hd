@@ -1,0 +1,87 @@
+// *********************************************************************** ARDUIO CODE ************************************************ //
+#include <WiFiNINA.h>
+#include <Firebase_Arduino_WiFiNINA.h>  // For NANO 33 IoT
+
+// ======== ENTER YOUR CREDENTIALS ========
+#define WIFI_SSID "HP"
+#define WIFI_PASSWORD "harshnagra"
+
+#define FIREBASE_HOST "arduinoledcontrol-b9303-default-rtdb.asia-southeast1.firebasedatabase.app"   // e.g., myproject-default-rtdb.firebaseio.com
+#define FIREBASE_AUTH "5fXeSgFi0LN8rMkNaO7ydt25VzcQoWKkcUJ4UGYy"
+// ======================================
+
+// LED pins (adjust to your wiring)
+// LED pins (corrected)
+#define BLUE_LED 2
+#define GREEN_LED 3
+#define RED_LED 4
+
+
+// Firebase data object
+FirebaseData firebaseData;
+
+void setup() {
+  Serial.begin(9600);
+
+  // Initialize LED pins
+  pinMode(BLUE_LED, OUTPUT);
+  pinMode(GREEN_LED, OUTPUT);
+  pinMode(RED_LED, OUTPUT);
+
+  Serial.println("Connecting to WiFi...");
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  int attempts = 0;
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+    attempts++;
+    if (attempts > 20) { // timeout after ~10 seconds
+      Serial.println("\nFailed to connect to WiFi");
+      return;
+    }
+  }
+  Serial.println("\nWiFi Connected!");
+  Serial.print("IP Address: ");
+  Serial.println(WiFi.localIP());
+
+  // Initialize Firebase for WiFiNINA boards
+  Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH, WIFI_SSID, WIFI_PASSWORD);
+  Serial.println("Firebase Initialized!");
+}
+
+void loop() {
+  // BLUE LED
+  if (Firebase.getString(firebaseData, "/leds/blue")) {
+    String blueVal = firebaseData.stringData();
+    Serial.print("[BLUE] Firebase value: ");
+    Serial.println(blueVal);
+    digitalWrite(BLUE_LED, blueVal == "ON" ? HIGH : LOW);
+  } else {
+    Serial.print("[BLUE] Failed to read: ");
+    Serial.println(firebaseData.errorReason());
+  }
+
+  // GREEN LED
+  if (Firebase.getString(firebaseData, "/leds/green")) {
+    String greenVal = firebaseData.stringData();
+    Serial.print("[GREEN] Firebase value: ");
+    Serial.println(greenVal);
+    digitalWrite(GREEN_LED, greenVal == "ON" ? HIGH : LOW);
+  } else {
+    Serial.print("[GREEN] Failed to read: ");
+    Serial.println(firebaseData.errorReason());
+  }
+
+  // RED LED
+  if (Firebase.getString(firebaseData, "/leds/red")) {
+    String redVal = firebaseData.stringData();
+    Serial.print("[RED] Firebase value: ");
+    Serial.println(redVal);
+    digitalWrite(RED_LED, redVal == "ON" ? HIGH : LOW);
+  } else {
+    Serial.print("[RED] Failed to read: ");
+    Serial.println(firebaseData.errorReason());
+  }
+
+  delay(5000);  // check every 5 seconds
+}
