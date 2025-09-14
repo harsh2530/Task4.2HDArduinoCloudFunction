@@ -1,0 +1,44 @@
+// ******************************************************************************** HTML CODE **************************************************************** //
+<!DOCTYPE html>
+<html>
+<head>
+  <title>LED Control</title>
+</head>
+<body>
+  <h1>Control Arduino LEDs</h1>
+
+  <button onclick="setLED('blue')">Blue LED</button>
+  <button onclick="setLED('green')">Green LED</button>
+  <button onclick="setLED('red')">Red LED</button>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+
+  <script>
+    // Replace these with Firebase project credentials
+    const firebaseConfig = {
+      apiKey: "AIzaSyArUjII2woK_P4NDm3rviTvgWsc8RBYMk0",
+      authDomain: "arduinoledcontrol-b9303.firebaseapp.com",
+      databaseURL: "https://arduinoledcontrol-b9303-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "arduinoledcontrol-b9303",
+      storageBucket: "arduinoledcontrol-b9303.appspot.com",
+      messagingSenderId: "986873795873",
+      appId: "1:986873795873:web:37f1d7e05f23bf445b1a60"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function setLED(color) {
+      db.ref('leds/' + color).get().then(snapshot => {
+        const current = snapshot.val();
+        const newValue = current === "ON" ? "OFF" : "ON";
+        db.ref('leds/' + color).set(newValue)
+          .then(() => console.log(color + " toggled to " + newValue))
+          .catch(err => console.error("Error:", err));
+      }).catch(err => console.error("Error reading value:", err));
+    }
+  </script>
+</body>
+</html>
